@@ -8,6 +8,7 @@ scalaVersion := "2.10.3"
 
 libraryDependencies ++= Seq(
   "org.sisioh" %% "scala-dddbase-core" % "0.1.24",
+  "com.github.nscala-time" %% "nscala-time" % "0.6.0",
   "org.specs2" %% "specs2" % "2.3.3" % "test"
 )
 

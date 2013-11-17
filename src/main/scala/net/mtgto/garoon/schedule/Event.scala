@@ -1,9 +1,9 @@
 package net.mtgto.garoon.schedule
 
-import org.sisioh.dddbase.core.model.Entity
+import com.github.nscala_time.time.Imports._
 import net.mtgto.garoon.{Id, Version}
+import org.sisioh.dddbase.core.model.Entity
 import scala.xml.Node
-import java.util.TimeZone
 
 class EventId(override val value: String) extends Id(value)
 
@@ -49,8 +49,6 @@ object PublicType extends Enumeration {
 
 /**
  * https://developers.cybozu.com/ja/garoon-api/schedule-data-format.html#EventType
- *
- * @param identity
  */
 trait Event extends Entity[EventId] {
   override val identity: EventId
@@ -96,6 +94,11 @@ trait Event extends Entity[EventId] {
    * 施設
    */
   val facilities: Seq[Facility]
+
+  /**
+   * 時間情報
+   */
+  val when: EventDateTime
 }
 
 object Event {
@@ -104,7 +107,7 @@ object Event {
                                    detail: Option[String], description: Option[String],
                                    allday: Option[Boolean], startOnly: Option[Boolean],
                                    hiddenPrivate: Option[Boolean], members: Seq[User],
-                                   facilities: Seq[Facility]) extends Event
+                                   facilities: Seq[Facility], when: EventDateTime) extends Event
 
   def apply(node: Node): Event = {
     val identity = EventId((node \ "@id").text)
@@ -130,8 +133,14 @@ object Event {
       val facilityOrder = (facility \ "@order").headOption.map(o => Id(o.text))
       Facility(facilityId, facilityName, facilityOrder)
     }
+    val when = (node \ "when" \ "datetime").headOption.map { datetime =>
+      val start = new DateTime((datetime \ "@start").text)
+      val end = (datetime \ "@end").headOption.map(e => new DateTime(e.text))
+      val facilityCode = (datetime \ "@facility_code").headOption.map(e => Id(e.text))
+      EventDateTime(start, end, facilityCode)
+    }.get
 
     DefaultEvent(identity, eventType, version, publicType, plan, detail, description, allday, startOnly,
-      hiddenPrivate, members, facilities)
+      hiddenPrivate, members, facilities, when)
   }
 }

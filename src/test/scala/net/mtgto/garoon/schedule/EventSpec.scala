@@ -2,6 +2,7 @@ package net.mtgto.garoon.schedule
 
 import org.specs2.mutable.Specification
 import net.mtgto.garoon.{Version, Id}
+import org.joda.time.DateTime
 
 class EventSpec extends Specification {
   "Event" should {
@@ -59,6 +60,10 @@ class EventSpec extends Specification {
       event.facilities must_== Seq(
         Facility(Id("683"), "鎮守府正面近海", Some(Id("2")))
       )
+      event.when must_== EventDateTime(
+        new DateTime("2013-11-14T09:00:00Z"),
+        Some(new DateTime("2013-11-14T10:15:00Z")),
+        None)
     }
   }
 }
