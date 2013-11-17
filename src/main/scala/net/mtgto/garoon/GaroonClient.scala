@@ -31,12 +31,7 @@ class GaroonClient(username: String, password: String, uri: URI) {
     val request = factory.createOMElement(actionName, namespace)
     request.addChild(parameters)
 
-    println(header)
-    println(request.getText)
-    println(request)
-
     Try(serviceClient.sendReceive(request))
-    //throw new RuntimeException
   }
 
   private[this] def createHeader(actionName: String, createdTime: DateTime, expiredTime: DateTime): OMElement = {
