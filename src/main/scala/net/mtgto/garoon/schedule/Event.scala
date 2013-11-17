@@ -2,7 +2,7 @@ package net.mtgto.garoon.schedule
 
 import com.github.nscala_time.time.Imports._
 import net.mtgto.garoon.{Id, Version}
-import org.sisioh.dddbase.core.model.Entity
+import org.sisioh.dddbase.core.model.{Identity, Entity}
 import scala.xml.Node
 
 class EventId(override val value: String) extends Id(value)
