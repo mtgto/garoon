@@ -21,5 +21,3 @@ scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xlint", "-feature", "-enco
 
 scalacOptions in Test ++= Seq("-Yrangepos")
 
-fork := true
-
