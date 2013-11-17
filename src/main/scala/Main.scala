@@ -1,11 +1,10 @@
-import com.cybozu.garoon3.common.{CBServiceClient, Config}
+import java.net.URI
+import net.mtgto.garoon.GaroonClient
 import net.mtgto.garoon.schedule.{EventId, EventRepository}
 import org.sisioh.dddbase.core.lifecycle.sync.SyncEntityIOContext
 
 object Main extends App {
-  val client = new CBServiceClient
-  val config = new Config("login.ini")
-  client.load(config)
+  val client = new GaroonClient(args(1), args(2), new URI(args(0)))
 
   val repository = new EventRepository(client)
   implicit val context = SyncEntityIOContext

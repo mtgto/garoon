@@ -1,20 +1,24 @@
 package net.mtgto.garoon.schedule
 
-import com.cybozu.garoon3.common.CBServiceClient
-import com.cybozu.garoon3.schedule.ScheduleGetEventsById
 import org.sisioh.dddbase.core.lifecycle.EntityIOContext
 import org.sisioh.dddbase.core.lifecycle.sync.SyncEntityReader
 import scala.util.Try
 import scala.xml.XML
+import net.mtgto.garoon.GaroonClient
 
-class EventRepository(client: CBServiceClient) extends SyncEntityReader[EventId, Event] {
+class EventRepository(client: GaroonClient) extends SyncEntityReader[EventId, Event] {
   def resolve(identity: EventId)(implicit ctx: EntityIOContext[Try]): Try[Event] = {
-    val action = new ScheduleGetEventsById()
-    action.addID(identity.value.toInt)
-    val result = client.sendReceive(action)
-    //result.getTextAsStream(true)
-    val node = XML.loadString(result.toString)
-    Try(Event((node \ "returns" \ "schedule_event").head))
+    val actionName = "ScheduleGetEventsById"
+    val parameters = client.factory.createOMElement("parameters", null)
+    val eventNode = client.factory.createOMElement("event_id", null)
+    eventNode.setText(identity.value)
+    parameters.addChild(eventNode)
+
+    val result = client.sendReceive(actionName, "/cbpapi/schedule/api", parameters)
+    result.map { element =>
+      val node = XML.load(element.toString)
+      Event((node \ "returns" \ "schedule_event").head)
+    }
   }
 
   def containsByIdentity(identity: EventId)(implicit ctx: EntityIOContext[Try]): Try[Boolean] =
