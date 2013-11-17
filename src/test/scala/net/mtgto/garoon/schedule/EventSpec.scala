@@ -1,8 +1,8 @@
 package net.mtgto.garoon.schedule
 
-import org.specs2.mutable.Specification
 import net.mtgto.garoon.{Version, Id}
 import org.joda.time.DateTime
+import org.specs2.mutable.Specification
 
 class EventSpec extends Specification {
   "Event" should {

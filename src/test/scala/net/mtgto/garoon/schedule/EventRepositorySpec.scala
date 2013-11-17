@@ -1,17 +1,21 @@
 package net.mtgto.garoon.schedule
 
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
-import com.cybozu.garoon3.common.CBServiceClient
+import net.mtgto.garoon.GaroonClient
+import org.apache.axiom.om.{OMFactory, OMElement}
 import org.sisioh.dddbase.core.lifecycle.sync.SyncEntityIOContext
-import org.apache.axiom.om.OMElement
+import org.specs2.mock.Mockito
+import org.specs2.mutable.Specification
+import scala.util.Success
 
 class EventRepositorySpec extends Specification with Mockito {
   "EventRepository" should {
     "be able to retrieve an event by its id" in {
-      val mockClient = mock[CBServiceClient]
+      val mockClient = mock[GaroonClient]
       val mockOMElement = mock[OMElement]
-      mockClient.sendReceive(any) returns mockOMElement
+      val mockFactory = mock[OMFactory]
+      mockClient.factory returns mockFactory
+      mockFactory.createOMElement(any[String], any) returns mock[OMElement]
+      mockClient.sendReceive(any, any, any) returns Success(mockOMElement)
       mockOMElement.toString returns
         """<schedule:ScheduleGetEventsByIdResponse xmlns:schedule="http://wsdl.cybozu.co.jp/schedule/2008">
           |<returns>

@@ -16,7 +16,7 @@ class EventRepository(client: GaroonClient) extends SyncEntityReader[EventId, Ev
 
     val result = client.sendReceive(actionName, "/cbpapi/schedule/api", parameters)
     result.map { element =>
-      val node = XML.load(element.toString)
+      val node = XML.loadString(element.toString)
       Event((node \ "returns" \ "schedule_event").head)
     }
   }
