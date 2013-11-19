@@ -138,7 +138,14 @@ object Event {
       val end = (datetime \ "@end").headOption.map(e => new DateTime(e.text))
       val facilityCode = (datetime \ "@facility_code").headOption.map(e => Id(e.text))
       EventDateTime(start, end, facilityCode)
-    }.get
+    }.getOrElse {
+      (node \ "when" \ "date").headOption.map { date =>
+        val start = new DateTime((date \ "@start").text)
+        val end = (date \ "@end").headOption.map(e => new DateTime(e.text) + 1.day - 1.second)
+        val facilityCode = (date \ "@facility_code").headOption.map(e => Id(e.text))
+        EventDateTime(start, end, facilityCode)
+      }.get
+    }
 
     DefaultEvent(identity, eventType, version, publicType, plan, detail, description, allday, startOnly,
       hiddenPrivate, members, facilities, when)
