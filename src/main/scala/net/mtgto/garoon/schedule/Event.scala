@@ -2,7 +2,7 @@ package net.mtgto.garoon.schedule
 
 import com.github.nscala_time.time.Imports._
 import net.mtgto.garoon.{Id, Version}
-import org.sisioh.dddbase.core.model.{Identity, Entity}
+import org.sisioh.dddbase.core.model.Entity
 import scala.xml.Node
 
 class EventId(override val value: String) extends Id(value)
@@ -140,8 +140,8 @@ object Event {
       EventDateTime(start, end, facilityCode)
     }.getOrElse {
       (node \ "when" \ "date").headOption.map { date =>
-        val start = new DateTime((date \ "@start").text)
-        val end = (date \ "@end").headOption.map(e => new DateTime(e.text) + 1.day - 1.second)
+        val start = parseDateTimeForInvalidString((date \ "@start").text)
+        val end = (date \ "@end").headOption.map(e => parseEndDateTimeForInvalidString(e.text))
         val facilityCode = (date \ "@facility_code").headOption.map(e => Id(e.text))
         EventDateTime(start, end, facilityCode)
       }.get
@@ -149,5 +149,21 @@ object Event {
 
     DefaultEvent(identity, eventType, version, publicType, plan, detail, description, allday, startOnly,
       hiddenPrivate, members, facilities, when)
+  }
+
+  val wrongDateTimeRegex = """(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})""".r
+
+  private[this] def parseDateTimeForInvalidString(text: String): DateTime = {
+    wrongDateTimeRegex findFirstIn text match {
+      case Some(wrongDateTimeRegex(date, time)) => DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(text)
+      case _ => new DateTime(text)
+    }
+  }
+
+  private[this] def parseEndDateTimeForInvalidString(text: String): DateTime = {
+    wrongDateTimeRegex findFirstIn text match {
+      case Some(wrongDateTimeRegex(date, time)) => DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").parseDateTime(text)
+      case _ => new DateTime(text) + 1.day - 1.second
+    }
   }
 }
