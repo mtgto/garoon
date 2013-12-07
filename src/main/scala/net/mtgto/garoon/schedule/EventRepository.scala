@@ -2,7 +2,7 @@ package net.mtgto.garoon.schedule
 
 import com.github.nscala_time.time.Imports._
 import net.mtgto.garoon.{Id, GaroonClient}
-import org.sisioh.dddbase.core.lifecycle.EntityIOContext
+import org.sisioh.dddbase.core.lifecycle.{EntityNotFoundException, EntityIOContext}
 import org.sisioh.dddbase.core.lifecycle.sync.SyncEntityReader
 import scala.util.Try
 import scala.xml.XML
@@ -16,10 +16,9 @@ class EventRepository(client: GaroonClient) extends SyncEntityReader[EventId, Ev
     parameters.addChild(eventNode)
 
     val result = client.sendReceive(actionName, "/cbpapi/schedule/api", parameters)
-    println(result)
     result.map { element =>
       val node = XML.loadString(element.toString)
-      Event((node \ "returns" \ "schedule_event").head)
+      (node \ "returns" \ "schedule_event").map(Event(_)).headOption.getOrElse(throw new EntityNotFoundException)
     }
   }
 
@@ -37,7 +36,6 @@ class EventRepository(client: GaroonClient) extends SyncEntityReader[EventId, Ev
     parameters.addChild(memberNode)
 
     val result = client.sendReceive(actionName, "/cbpapi/schedule/api", parameters)
-    println(result)
     result.map { element =>
       val node = XML.loadString(element.toString)
       node \ "returns" \ "schedule_event" map (Event(_))
