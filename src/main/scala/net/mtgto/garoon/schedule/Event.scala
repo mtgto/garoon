@@ -47,6 +47,53 @@ object PublicType extends Enumeration {
   val Qualified = Value("qualified")
 }
 
+object RepeatEventType extends Enumeration {
+  /**
+   * 毎日例）10日 ～ 15日までの繰り返し
+   */
+  val Day = Value("day")
+
+  /**
+   * 毎日（土日を除く）例）平日のみの繰り返し
+   */
+  val Weekday = Value("weekday")
+
+  /**
+   * 毎週例）毎週月曜日
+   */
+  val Week = Value("week")
+
+  /**
+   * 毎月第一週例）毎月第一週の月曜日の繰り返し
+   */
+  val Week1st = Value("1stweek")
+
+  /**
+   * 毎月第二週例）毎月第二週の火曜日の繰り返し
+   */
+  val Week2nd = Value("2ndweek")
+
+  /**
+   * 毎月第三週例）毎月第三週の水曜日の繰り返し
+   */
+  val Week3rd = Value("3rdweek")
+
+  /**
+   * 毎月第四週例）毎月第四週の木曜日の繰り返し
+   */
+  val Week4th = Value("4thweek")
+
+  /**
+   * 毎月最終週例）毎月最終週の金曜日の繰り返し
+   */
+  val Week5th = Value("lastweek")
+
+  /**
+   * 毎月例）毎月1日の繰り返し
+   */
+  val Month = Value("month")
+}
+
 /**
  * https://developers.cybozu.com/ja/garoon-api/schedule-data-format.html#EventType
  */
@@ -96,9 +143,14 @@ trait Event extends Entity[EventId] {
   val facilities: Seq[Facility]
 
   /**
+   * 繰り返し予定の情報
+   */
+  val repeatInfo: Option[RepeatInfo]
+
+  /**
    * 時間情報
    */
-  val when: EventDateTime
+  val when: Option[EventDateTime]
 }
 
 object Event {
@@ -107,7 +159,8 @@ object Event {
                                    detail: Option[String], description: Option[String],
                                    allday: Option[Boolean], startOnly: Option[Boolean],
                                    hiddenPrivate: Option[Boolean], members: Seq[User],
-                                   facilities: Seq[Facility], when: EventDateTime) extends Event
+                                   facilities: Seq[Facility], repeatInfo: Option[RepeatInfo],
+                                   when: Option[EventDateTime]) extends Event
 
   def apply(node: Node): Event = {
     val identity = EventId((node \ "@id").text)
@@ -133,22 +186,39 @@ object Event {
       val facilityOrder = (facility \ "@order").headOption.map(o => Id(o.text))
       Facility(facilityId, facilityName, facilityOrder)
     }
+    val repeatInfo = (node \ "repeat_info").headOption map { repeatInfo =>
+      val repeatType = RepeatEventType.withName((repeatInfo \ "condition" \ "@type").text)
+      val startDate = new LocalDate((repeatInfo \ "condition" \ "@start_date").text)
+      val endDate = (repeatInfo \ "condition" \ "@end_date").headOption.map(d => new LocalDate(d.text))
+      val startTime = (repeatInfo \ "condition" \ "@start_time").headOption.map(d => new LocalTime(d.text))
+      val endTime = (repeatInfo \ "condition" \ "@end_time").headOption.map(d => new LocalTime(d.text))
+      val day = (repeatInfo \ "condition" \ "@day").headOption.map(_.text.toInt)
+      val week = (repeatInfo \ "condition" \ "@week").headOption.map(_.text.toInt)
+      val exclusiveDatetimes = (repeatInfo \ "exclusive_datetimes").headOption.map {
+        _ \ "exclusive_datetime" map { exclusiveDatetime =>
+          val start = new DateTime((exclusiveDatetime \ "@start").text)
+          val end = new DateTime((exclusiveDatetime \ "@end").text)
+          new Interval(start, end)
+        }
+      }
+      RepeatInfo(repeatType, startDate, endDate, startTime, endTime, day, week, exclusiveDatetimes)
+    }
     val when = (node \ "when" \ "datetime").headOption.map { datetime =>
       val start = new DateTime((datetime \ "@start").text)
       val end = (datetime \ "@end").headOption.map(e => new DateTime(e.text))
       val facilityCode = (datetime \ "@facility_code").headOption.map(e => Id(e.text))
       EventDateTime(start, end, facilityCode)
-    }.getOrElse {
+    } orElse {
       (node \ "when" \ "date").headOption.map { date =>
         val start = parseDateTimeForInvalidString((date \ "@start").text)
         val end = (date \ "@end").headOption.map(e => parseEndDateTimeForInvalidString(e.text))
         val facilityCode = (date \ "@facility_code").headOption.map(e => Id(e.text))
         EventDateTime(start, end, facilityCode)
-      }.get
+      }
     }
 
     DefaultEvent(identity, eventType, version, publicType, plan, detail, description, allday, startOnly,
-      hiddenPrivate, members, facilities, when)
+      hiddenPrivate, members, facilities, repeatInfo, when)
   }
 
   val wrongDateTimeRegex = """(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})""".r

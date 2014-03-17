@@ -60,10 +60,10 @@ class EventSpec extends Specification {
       event.facilities must_== Seq(
         Facility(Id("683"), "鎮守府正面近海", Some(Id("2")))
       )
-      event.when must_== EventDateTime(
+      event.when must beSome(EventDateTime(
         new DateTime("2013-11-14T09:00:00Z"),
         Some(new DateTime("2013-11-14T10:15:00Z")),
-        None)
+        None))
     }
 
     "be able to parse oneday event xml contains invalid date format (it's garoon problem)" in {
@@ -120,10 +120,10 @@ class EventSpec extends Specification {
       event.facilities must_== Seq(
         Facility(Id("683"), "鎮守府正面近海", Some(Id("2")))
       )
-      event.when must_== EventDateTime(
+      event.when must beSome(EventDateTime(
         new DateTime("2013-11-14T00:00:00"),
         Some(new DateTime("2013-11-14T23:59:00")),
-        None)
+        None))
     }
   }
 }

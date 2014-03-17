@@ -12,9 +12,9 @@ libraryDependencies ++= Seq(
   "org.apache.ws.commons.axiom" % "axiom-api" % "1.2.14",
   "org.apache.ws.commons.axiom" % "axiom-impl" % "1.2.14",
   "org.apache.ws.commons.schema" % "XmlSchema" % "1.4.7",
-  "org.sisioh" %% "scala-dddbase-core" % "0.1.24",
+  "org.sisioh" %% "scala-dddbase-core" % "0.1.26",
   "com.github.nscala-time" %% "nscala-time" % "0.6.0",
-  "org.specs2" %% "specs2" % "2.3.3" % "test"
+  "org.specs2" %% "specs2" % "2.3.10" % "test"
 )
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xlint", "-feature", "-encoding", "UTF8")
