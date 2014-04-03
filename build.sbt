@@ -21,3 +21,5 @@ scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xlint", "-feature", "-enco
 
 scalacOptions in Test ++= Seq("-Yrangepos")
 
+publishTo := Some(Resolver.file("file", new File("maven/")))
+
