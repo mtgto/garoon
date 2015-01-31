@@ -14,7 +14,8 @@ libraryDependencies ++= Seq(
   "org.apache.ws.commons.schema" % "XmlSchema" % "1.4.7",
   "org.sisioh" %% "scala-dddbase-core" % "0.1.29",
   "com.github.nscala-time" %% "nscala-time" % "1.6.0",
-  "org.specs2" %% "specs2-core" % "2.4.15" % "test"
+  "org.specs2" %% "specs2-core" % "2.4.15" % "test",
+  "org.specs2" %% "specs2-mock" % "2.4.15" % "test"
 )
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xlint", "-feature", "-encoding", "UTF8")
