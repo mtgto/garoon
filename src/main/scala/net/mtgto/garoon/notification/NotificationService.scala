@@ -1,19 +1,19 @@
 package net.mtgto.garoon.notification
 
 import com.github.nscala_time.time.Imports._
-import net.mtgto.garoon.GaroonClient
+import net.mtgto.garoon.{Authentication, GaroonClient}
 
 import scala.util.Try
 import scala.xml.XML
 
-class NotificationService(client: GaroonClient) {
+class NotificationService(client: GaroonClient, auth: Authentication) {
   def getNotificationVersions(startTime: DateTime): Try[Seq[NotificationItem]] = {
     val actionName = "NotificationGetNotificationVersions"
     val parameters = client.factory.createOMElement("parameters", null)
     parameters.addAttribute("start", startTime.toString(), null)
     //parameters.addAttribute("end", interval.getEnd.toString(), null)
 
-    val result = client.sendReceive(actionName, "/cbpapi/notification/api", parameters)
+    val result = client.sendReceive(actionName, "/cbpapi/notification/api", parameters)(auth, None)
     result.map { element =>
       val node = XML.loadString(element.toString)
       (node \ "returns" \ "notification_item").map(NotificationItem(_))
@@ -31,7 +31,7 @@ class NotificationService(client: GaroonClient) {
         parameters.addChild(notificationNode)
     }
 
-    val result = client.sendReceive(actionName, "/cbpapi/notification/api", parameters)
+    val result = client.sendReceive(actionName, "/cbpapi/notification/api", parameters)(auth, None)
     result.map { element =>
       val node = XML.loadString(element.toString)
       (node \ "returns" \ "notification").map(Notification(_))

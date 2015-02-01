@@ -1,6 +1,6 @@
 package net.mtgto.garoon.schedule
 
-import net.mtgto.garoon.GaroonClient
+import net.mtgto.garoon.{Authentication, GaroonClient}
 import org.apache.axiom.om.{OMFactory, OMElement}
 import org.sisioh.dddbase.core.lifecycle.sync.SyncEntityIOContext
 import org.specs2.mock.Mockito
@@ -11,11 +11,12 @@ class EventRepositorySpec extends Specification with Mockito {
   "EventRepository" should {
     "be able to retrieve an event by its id" in {
       val mockClient = mock[GaroonClient]
+      val mockAuth = mock[Authentication]
       val mockOMElement = mock[OMElement]
       val mockFactory = mock[OMFactory]
       mockClient.factory returns mockFactory
       mockFactory.createOMElement(any[String], any) returns mock[OMElement]
-      mockClient.sendReceive(any, any, any) returns Success(mockOMElement)
+      mockClient.sendReceive(any, any, any)(any, any) returns Success(mockOMElement)
       mockOMElement.toString returns
         """<schedule:ScheduleGetEventsByIdResponse xmlns:schedule="http://wsdl.cybozu.co.jp/schedule/2008">
           |<returns>
@@ -56,7 +57,7 @@ class EventRepositorySpec extends Specification with Mockito {
           |          </follows>
           |        </schedule_event> </returns>
           |</schedule:ScheduleGetEventsByIdResponse>""".stripMargin
-      val repository = new EventRepository(mockClient)
+      val repository = new EventRepository(mockClient, mockAuth)
       implicit val context = SyncEntityIOContext
       val eventId = EventId("582682")
       val event = repository.resolve(eventId).get

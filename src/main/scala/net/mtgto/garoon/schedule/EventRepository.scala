@@ -1,13 +1,13 @@
 package net.mtgto.garoon.schedule
 
 import com.github.nscala_time.time.Imports._
-import net.mtgto.garoon.{Id, GaroonClient}
+import net.mtgto.garoon.{Authentication, Id, GaroonClient}
 import org.sisioh.dddbase.core.lifecycle.{EntityNotFoundException, EntityIOContext}
 import org.sisioh.dddbase.core.lifecycle.sync.SyncEntityReader
 import scala.util.Try
 import scala.xml.XML
 
-class EventRepository(client: GaroonClient) extends SyncEntityReader[EventId, Event] {
+class EventRepository(client: GaroonClient, val auth: Authentication) extends SyncEntityReader[EventId, Event] {
   def resolve(identity: EventId)(implicit ctx: EntityIOContext[Try]): Try[Event] = {
     val actionName = "ScheduleGetEventsById"
     val parameters = client.factory.createOMElement("parameters", null)
@@ -15,7 +15,7 @@ class EventRepository(client: GaroonClient) extends SyncEntityReader[EventId, Ev
     eventNode.setText(identity.value)
     parameters.addChild(eventNode)
 
-    val result = client.sendReceive(actionName, "/cbpapi/schedule/api", parameters)
+    val result = client.sendReceive(actionName, "/cbpapi/schedule/api", parameters)(auth, None)
     result.map { element =>
       val node = XML.loadString(element.toString)
       (node \ "returns" \ "schedule_event").map(Event(_)).headOption.getOrElse(throw new EntityNotFoundException)
@@ -35,7 +35,7 @@ class EventRepository(client: GaroonClient) extends SyncEntityReader[EventId, Ev
     memberNode.addAttribute("id", userId.value, null)
     parameters.addChild(memberNode)
 
-    val result = client.sendReceive(actionName, "/cbpapi/schedule/api", parameters)
+    val result = client.sendReceive(actionName, "/cbpapi/schedule/api", parameters)(auth, None)
     result.map { element =>
       val node = XML.loadString(element.toString)
       node \ "returns" \ "schedule_event" map (Event(_))

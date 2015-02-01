@@ -1,12 +1,12 @@
 package net.mtgto.garoon.user
 
-import net.mtgto.garoon.GaroonClient
+import net.mtgto.garoon.{Authentication, GaroonClient}
 import org.sisioh.dddbase.core.lifecycle.{EntityIOContext, EntityNotFoundException}
 import org.sisioh.dddbase.core.lifecycle.sync.SyncEntityReader
 import scala.util.Try
 import scala.xml.XML
 
-class UserRepository(client: GaroonClient) extends SyncEntityReader[UserId, User] {
+class UserRepository(client: GaroonClient, auth: Authentication) extends SyncEntityReader[UserId, User] {
   def resolve(identity: UserId)(implicit ctx: EntityIOContext[Try]): Try[User] = {
     val actionName = "BaseGetUsersById"
     val parameters = client.factory.createOMElement("parameters", null)
@@ -14,7 +14,7 @@ class UserRepository(client: GaroonClient) extends SyncEntityReader[UserId, User
     eventNode.setText(identity.value)
     parameters.addChild(eventNode)
 
-    val result = client.sendReceive(actionName, "/cbpapi/base/api", parameters)
+    val result = client.sendReceive(actionName, "/cbpapi/base/api", parameters)(auth, None)
     result.map { element =>
       val node = XML.loadString(element.toString)
       (node \ "returns" \ "user").map(User(_)).headOption.getOrElse(throw new EntityNotFoundException)
@@ -33,7 +33,7 @@ class UserRepository(client: GaroonClient) extends SyncEntityReader[UserId, User
       parameters.addChild(loginNameNode)
     }
 
-    val result = client.sendReceive(actionName, "/cbpapi/base/api", parameters)
+    val result = client.sendReceive(actionName, "/cbpapi/base/api", parameters)(auth, None)
     result.map { element =>
       val node = XML.loadString(element.toString)
       (node \ "returns" \ "user").map(User(_))
