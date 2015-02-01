@@ -21,6 +21,7 @@ object Main extends App {
   //val result = repository.resolve(UserId("1039"))
   //val result = repository.findByLoginNames(Seq("satoshi_goto"))
   //val result = service.get
-  val result = service.getNotificationVersions(DateTime.now - 1.weeks)
+  val result = service.getNotificationVersions(DateTime.now - 3.days)
+    .map(list => service.getNotifications(list.map(item => (item.moduleId, item.item))))
   println(result)
 }
