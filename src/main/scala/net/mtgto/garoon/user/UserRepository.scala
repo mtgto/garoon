@@ -39,4 +39,14 @@ class UserRepository(client: GaroonClient, auth: Authentication) extends SyncEnt
       (node \ "returns" \ "user").map(User(_))
     }
   }
+
+  def getLoggedInUserId: Try[UserId] = {
+    val actionName = "UtilGetLoginUserId"
+    val parameters = client.factory.createOMElement("parameters", null)
+    val result = client.sendReceive(actionName, "/util_api/util/api", parameters)(auth, None)
+    result.map { element =>
+      val node = XML.loadString(element.toString)
+      UserId((node \ "returns" \ "user_id").text)
+    }
+  }
 }
