@@ -1,5 +1,6 @@
 package net.mtgto.garoon
 
+import net.mtgto.garoon.user.UserId
 import scala.util.Try
 import scala.xml.XML
 
@@ -31,6 +32,16 @@ class LoginService(client: GaroonClient) {
     result.map { element =>
       val node = XML.loadString(element.toString)
       RequestToken((node \ "returns" \ "request_token").text)
+    }
+  }
+
+  def getUserId(cookie: Cookie): Try[UserId] = {
+    val actionName = "UtilGetLoginUserId"
+    val parameters = client.factory.createOMElement("parameters", null)
+    val result = client.sendReceive(actionName, "/util_api/util/api", parameters)(SessionCookie(cookie), None)
+    result.map { element =>
+      val node = XML.loadString(element.toString)
+      UserId((node \ "returns" \ "user_id").text)
     }
   }
 }
