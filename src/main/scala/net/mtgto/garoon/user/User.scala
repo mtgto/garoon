@@ -20,15 +20,23 @@ trait User extends Entity[UserId] {
    * ログイン名
    */
   val loginName: String
+
+  val organizationIds: Seq[OrganizationId]
+
+  val primaryOrganizationId: Option[OrganizationId]
 }
 
 object User {
-  private[this] case class DefaultUser(identity: UserId, name: String, loginName: String) extends User
+  private[this] case class DefaultUser(
+    identity: UserId, name: String, loginName: String, organizationIds: Seq[OrganizationId],
+    primaryOrganizationId: Option[OrganizationId]) extends User
 
   def apply(node: Node): User = {
     val identity = UserId((node \ "@key").text)
     val name = (node \ "@name").text
     val loginName = (node \ "@login_name").text
-    DefaultUser(identity, name, loginName)
+    val organizationIds = (node \ "organization" \ "@id").map(id => OrganizationId(id.text))
+    val primaryOrganizationId = (node \ "@primary_organization").headOption.map(id => OrganizationId(id.text))
+    DefaultUser(identity, name, loginName, organizationIds, primaryOrganizationId)
   }
 }

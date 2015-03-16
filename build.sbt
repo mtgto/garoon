@@ -2,9 +2,9 @@ name := "garoon"
 
 organization := "net.mtgto"
 
-version := "0.2.0-SNAPSHOT"
+version := "0.3.0-SNAPSHOT"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.10.5"
 
 libraryDependencies ++= Seq(
   "org.apache.axis2" % "axis2" % "1.6.2",
