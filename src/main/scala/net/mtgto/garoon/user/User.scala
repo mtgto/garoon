@@ -35,7 +35,7 @@ object User {
     val identity = UserId((node \ "@key").text)
     val name = (node \ "@name").text
     val loginName = (node \ "@login_name").text
-    val organizationIds = (node \ "organization" \ "@id").map(id => OrganizationId(id.text))
+    val organizationIds = (node \ "organization").map(n => OrganizationId((n \ "@id").text))
     val primaryOrganizationId = (node \ "@primary_organization").headOption.map(id => OrganizationId(id.text))
     DefaultUser(identity, name, loginName, organizationIds, primaryOrganizationId)
   }
